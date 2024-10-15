@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- this file will take care of general page structure -->
+<!-- and wil have the page layout which are common to all the pages -->
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - Microblog</title>
+      {% else %}
+      <title>Welcome to Microblog</title>
+      {% endif %}
+    </head>
+    <body>
+      <!-- /index in href is the @app.route('/index') -->
+        <div>Microblog: <a href="/index">Home</a></div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
