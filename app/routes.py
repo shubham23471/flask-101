@@ -7,6 +7,7 @@ from flask_login import (current_user, login_user,
 import sqlalchemy as sa
 from flask import request
 from urllib.parse import urlsplit
+from datetime import datetime, timezone
 
 # this is called as view func: handlers for application routes.
 # this decorator create an association b/w URL and the function. 
@@ -77,3 +78,27 @@ def register():
 		flash('Congratulations, you are now a registered user!')
 		return redirect(url_for('login'))
 	return render_template('register.html', title='Register', form=form)
+
+@app.route('/user/<username>') # only GET method
+@login_required # only show this page if user is login
+def user(username):
+	user = db.first_or_404(sa.select(User).where(User.username == username))
+	posts = [
+		{'author': user, 'body' : "Test post 1"},
+		{'author': user, 'body': 'Test post #2'}
+	]
+	return render_template('user.html', user=user, posts=posts)
+
+
+
+@app.before_request
+def before_request():
+	""" 
+	- func to run: with reach request. 
+	- this func will be executed before any view function of the application. 
+	
+	to update last seen"""
+	if current_user.is_authenticated:
+		# if the user in db then update last_seen column
+		current_user.last_seen = datetime.now(timezone.utc)
+		db.session.commit()

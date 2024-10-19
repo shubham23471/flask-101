@@ -26,11 +26,11 @@ class RegistrationForm(FlaskForm):
 		# checking if user present in db
 		user = db.session.scalar(sa.select(User).where(User.username == username.data))
 		if user is not None: 
-			raise ValidationError('Username already taken!!. Please use a differen username.')
+			raise ValidationError('Username already taken!!. Please use a different username.')
 
 	def validate_email(self, email):
 		user = db.session.scalar(sa.select(User).where(User.email == email.data))
 		if user is not None: 
-			raise ValidationError('Please use a differen email address')
+			raise ValidationError('Please use a different email address')
 
 	

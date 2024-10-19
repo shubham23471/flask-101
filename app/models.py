@@ -6,6 +6,7 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import login 
+from hashlib import md5
 
 # use database model 
 class User(UserMixin, db.Model):
@@ -20,6 +21,10 @@ class User(UserMixin, db.Model):
     # this is not a database field, but a high level view of relationship 
     # b/w user and post 
     posts: so.WriteOnlyMapped['Post'] = so.relationship(back_populates='author')
+    about_me: so.Mapped[Optional[str]] = so.mapped_column(sa.String(140))
+    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -30,6 +35,11 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def avatar(self, size):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
+    
+
 class Post(db.Model):
     "Model class for post table"
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
