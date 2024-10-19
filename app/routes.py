@@ -8,6 +8,7 @@ import sqlalchemy as sa
 from flask import request
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
+from app.forms import EditProfileForm
 
 # this is called as view func: handlers for application routes.
 # this decorator create an association b/w URL and the function. 
@@ -82,6 +83,7 @@ def register():
 @app.route('/user/<username>') # only GET method
 @login_required # only show this page if user is login
 def user(username):
+	"""View func to display user profile"""
 	user = db.first_or_404(sa.select(User).where(User.username == username))
 	posts = [
 		{'author': user, 'body' : "Test post 1"},
@@ -102,3 +104,22 @@ def before_request():
 		# if the user in db then update last_seen column
 		current_user.last_seen = datetime.now(timezone.utc)
 		db.session.commit()
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+	form = EditProfileForm()
+	if form.validate_on_submit():
+		current_user.username = form.username.data
+		current_user.about_me = form.about_me.data
+		db.session.commit()
+		flash('Your Changes have been saved')
+		return redirect(url_for('edit_profile'))
+	elif request.method == "GET":
+		# getting the pre-populate data from current_user
+		# instead from DB as it already loaded when 
+		# a request been send to /user/<username> end point
+		form.username.data = current_user.username
+		form.about_me.data = current_user.about_me
+	return render_template('edit_profile.html', title='Edit Profile', 
+						form=form)
