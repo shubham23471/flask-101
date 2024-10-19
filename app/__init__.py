@@ -14,4 +14,4 @@ migrate = Migrate(app, db) # databse migration engine
 login = LoginManager(app)
 login.login_view = 'login' # name of the view function that handles login
 
-from app import routes, models
+from app import routes, models, errors
