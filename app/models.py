@@ -58,7 +58,22 @@ class User(UserMixin, db.Model):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
     
+    def is_following(self, user):
+        "Check if user1 is following user2"
+        query = self.following.select().where(User.id == user.id)
+        return db.session.scalar(query) is not None
     
+    def follow(self, user):
+        """using write-only relationship object to add user 
+        in following attribute of class User""" 
+        if not self.is_following(user):
+            self.following.add(user)
+    
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
+    
+
 
 class Post(db.Model):
     "Model class for post table"
