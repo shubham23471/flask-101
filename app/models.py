@@ -73,6 +73,51 @@ class User(UserMixin, db.Model):
         if self.is_following(user):
             self.following.remove(user)
     
+    def followers_count(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.followers.select().subquery())
+        return db.session.scalar(query)
+
+    def following_count(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.following.select().subquery())
+        return db.session.scalar(query)
+    
+    def following_posts(self):
+        "Function to get all the following post of an user"
+        Author = so.aliased(User)
+        Follower = so.aliased(User)
+        return (
+            sa.select(Post)
+            .join(Post.author.of_type(Author)) 
+            .join(Author.followers.of_type(Follower))
+            .where(Follower.id == self.id)
+            .order_by(Post.timestamp.desc())
+        )
+
+    # def following_posts(self):
+    #     return (
+    #         Post.query
+    #         .join(Post.author)
+    #         .join(User.followers)
+    #         .filter(User.id == self.id)
+    #         .order_by(Post.timestamp.desc())
+    #     )
+
+    # def following_posts(self):
+    #     return (
+    #         Post.query
+    #         .join(Post.author)
+    #         .join(User.followers, isouter=True)
+    #         .filter(
+    #             sa.or_(
+    #                 User.id == self.id,  # posts from users you follow
+    #                 Post.author_id == self.id  # your own posts
+    #             )
+    #         )
+    #         .group_by(Post)
+    #         .order_by(Post.timestamp.desc())
+    #     )
 
 
 class Post(db.Model):
