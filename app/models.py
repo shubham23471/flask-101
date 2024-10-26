@@ -2,12 +2,13 @@ from datetime import datetime, timezone
 from typing import Optional
 import sqlalchemy as sa 
 import sqlalchemy.orm as so 
-from app import db
+from app import db, app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import login 
 from hashlib import md5
-
+from time import time 
+import jwt
 
 # I am not declaring this table as a model, like I did for the users 
 # and posts tables.
@@ -114,7 +115,22 @@ class User(UserMixin, db.Model):
     #         .order_by(Post.timestamp.desc())
     #     )
 
+    # reset user password: token methods
+    def get_reset_password_token(self, expires_in=600):
+        res = jwt.encode({'reset_password': self.id, 
+                   'exp': time() + expires_in},
+                   app.config['SECRET_KEY'], algorithm='HS256')
+        return res
 
+    @staticmethod
+    def verify_reset_password(token):
+        try: 
+            id =  jwt.decode(token, app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return db.session.get(User, id)
+    
 class Post(db.Model):
     "Model class for post table"
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
