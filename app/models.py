@@ -84,25 +84,20 @@ class User(UserMixin, db.Model):
         return db.session.scalar(query)
     
     def following_posts(self):
-        "Function to get all the following post of an user"
         Author = so.aliased(User)
         Follower = so.aliased(User)
         return (
             sa.select(Post)
-            .join(Post.author.of_type(Author)) 
-            .join(Author.followers.of_type(Follower))
-            .where(Follower.id == self.id)
+            .join(Post.author.of_type(Author))
+            .join(Author.followers.of_type(Follower), isouter=True)
+            .where(sa.or_(
+                Follower.id == self.id,
+                Author.id == self.id,
+            ))
+            .group_by(Post)
             .order_by(Post.timestamp.desc())
         )
 
-    # def following_posts(self):
-    #     return (
-    #         Post.query
-    #         .join(Post.author)
-    #         .join(User.followers)
-    #         .filter(User.id == self.id)
-    #         .order_by(Post.timestamp.desc())
-    #     )
 
     # def following_posts(self):
     #     return (
@@ -112,7 +107,7 @@ class User(UserMixin, db.Model):
     #         .filter(
     #             sa.or_(
     #                 User.id == self.id,  # posts from users you follow
-    #                 Post.author_id == self.id  # your own posts
+    #                 Post.author.id == self.id  # your own posts
     #             )
     #         )
     #         .group_by(Post)
