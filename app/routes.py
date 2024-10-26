@@ -18,7 +18,7 @@ from app.forms import EditProfileForm, EmptyForm, PostForm
 def index():
 	form = PostForm()
 	if form.validate_on_submit():
-		post = Post(form.post.data, author=current_user)
+		post = Post(body=form.post.data, author=current_user)
 		db.session.add(post)
 		db.session.commit()
 		flash('Your post is now live!')
@@ -168,3 +168,13 @@ def unfollow(username):
     else:
         return redirect(url_for('index'))
 	
+@app.route('/explore')
+@login_required
+def explore():
+	"To display other User's Post on homepage"
+	query = sa.select(Post).order_by(Post.timestamp.desc())
+	posts = db.session.scalars(query).all()
+	# Notice: render_template without the form.
+	return render_template('index.html', title='Explore',
+						posts=posts)
+
