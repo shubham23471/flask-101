@@ -58,3 +58,7 @@ class EmptyForm(FlaskForm):
 	"Empty form for follow and unfllow"
 	submit = SubmitField('Submit')
 
+class PostForm(FlaskForm):
+	post = TextAreaField('Say Something', validators=[DataRequired(), 
+												   Length(min=1, max=140)])
+	submit = SubmitField('Submit Post')
