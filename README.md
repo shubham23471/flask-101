@@ -29,3 +29,6 @@ Working repo for learning Flask.
 
 ### Tips
 1. It is always best to move the application logic away from view functions and into models or other auxiliary classes or modules, because as you will see later in this chapter, that makes **unit testing** much easier. For eg: Functionality to follow and unfollow is writted in models.py
+
+### Note
+1. User password reset via Email is not tested yet.
