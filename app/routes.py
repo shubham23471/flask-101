@@ -26,11 +26,11 @@ def index():
 	form = PostForm()
 	if form.validate_on_submit():
 		try: 
-			langauge = detect(form.post.data)
+			language = detect(form.post.data)
 		except LangDetectException:
-			langauge = ''
+			language = ''
 		post = Post(body=form.post.data, author=current_user, 
-			  		langauge=langauge)
+			  		language=language)
 		post = Post(body=form.post.data, author=current_user)
 		db.session.add(post)
 		db.session.commit()
