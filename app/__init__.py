@@ -1,3 +1,4 @@
+from flask import request
 from flask import Flask 
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +9,12 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 from flask_mail import Mail
 from flask_moment import Moment
+from flask_babel import Babel
+from flask_babel import Babel, lazy_gettext as _l
+
+def get_locale():
+    "for translation using flask-babel"
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 # set to the name of the module
 app = Flask(__name__)
@@ -18,8 +25,11 @@ db = SQLAlchemy(app) # db object
 migrate = Migrate(app, db) # databse migration engine
 login = LoginManager(app)
 login.login_view = 'login' # name of the view function that handles login
+login.login_message = _l('Please log in to access this page.')
 mail = Mail(app)
 moment = Moment(app)
+
+babel = Babel(app, locale_selector=get_locale)
 
 if not app.debug:
     if app.config['MAIL_SERVER']:
