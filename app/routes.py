@@ -14,6 +14,7 @@ from app.forms import (EditProfileForm, EmptyForm,
 						PostForm, ResetPasswordRequestForm,
 						ResetPasswordForm)
 from app.email import send_password_reset_email
+from langdetect import detect, LangDetectException
 
 # this is called as view func: handlers for application routes.
 # this decorator create an association b/w URL and the function. \
@@ -23,6 +24,12 @@ from app.email import send_password_reset_email
 def index():
 	form = PostForm()
 	if form.validate_on_submit():
+		try: 
+			langauge = detect(form.post.data)
+		except LangDetectException:
+			langauge = ''
+		post = Post(body=form.post.data, author=current_user, 
+			  		langauge=langauge)
 		post = Post(body=form.post.data, author=current_user)
 		db.session.add(post)
 		db.session.commit()
