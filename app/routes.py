@@ -15,6 +15,7 @@ from app.forms import (EditProfileForm, EmptyForm,
 						ResetPasswordForm)
 from app.email import send_password_reset_email
 from langdetect import detect, LangDetectException
+from app.translate import translate
 
 # this is called as view func: handlers for application routes.
 # this decorator create an association b/w URL and the function. \
@@ -251,3 +252,10 @@ def reset_password(token):
 	return render_template('reset_password.html', form=form)
 
 	
+@app.route('/translate',  methods=['POST'])
+@login_required
+def translate_text():
+	data = request.get_data()
+	res = {'text': translate(data['text'], 
+						  data['source_language'],
+						  data['dest_language'])}
