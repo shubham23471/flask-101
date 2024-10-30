@@ -26,10 +26,15 @@ migrate = Migrate(app, db) # databse migration engine
 login = LoginManager(app)
 login.login_view = 'login' # name of the view function that handles login
 login.login_message = _l('Please log in to access this page.')
+# for email support
 mail = Mail(app)
+# for transaltion 
 moment = Moment(app)
-
 babel = Babel(app, locale_selector=get_locale)
+
+from app.errors import bp as errors_bp
+app.register_blueprint(errors_bp)
+
 
 if not app.debug:
     if app.config['MAIL_SERVER']:
