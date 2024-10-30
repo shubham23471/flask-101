@@ -1,6 +1,6 @@
 from flask import (render_template, flash, redirect, 
  					url_for, request, g, current_app)
-from app import app, db
+from app import db
 from app.models import User, Post
 from flask_login import (current_user,login_required)
 from flask_babel import _, get_locale
@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from flask import request
 from urllib.parse import urlsplit
 from datetime import datetime, timezone
-from app.forms import (EditProfileForm, EmptyForm, 
+from app.main.forms import (EditProfileForm, EmptyForm, 
 						PostForm)
 from langdetect import detect, LangDetectException
 from app.translate import translate
