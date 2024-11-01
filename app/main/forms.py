@@ -7,6 +7,7 @@ from app.models import User
 from app import db
 import sqlalchemy as sa
 from flask_babel import _, lazy_gettext as _l
+from flask import request
 
 
 class EditProfileForm(FlaskForm):
@@ -35,3 +36,20 @@ class PostForm(FlaskForm):
 	post = TextAreaField(_l('Say Something'), validators=[DataRequired(), 
 												   Length(min=1, max=140)])
 	submit = SubmitField(_l('Submit Post'))
+
+class SearchForm(FlaskForm):
+	"""To display search form on navigation bar
+	It is GET request from the form
+	formdata: determine from where Flask-WTF gets form submissions
+
+	"""
+	q = StringField(_l('Search'), validators=[DataRequired()])
+
+	def __init__(self, *args, **kwargs):
+		if 'formdata' not in kwargs:
+			# request.args is where Flask writes the query string 
+			# arguments
+			kwargs['formdata'] = request.args
+		if 'meta' not in kwargs:
+			kwargs['meta'] = {'csrf' : False}
+		super(SearchForm, self).__init__(*args, **kwargs)

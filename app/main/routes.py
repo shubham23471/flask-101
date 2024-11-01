@@ -13,6 +13,8 @@ from app.main.forms import (EditProfileForm, EmptyForm,
 from langdetect import detect, LangDetectException
 from app.translate import translate
 from app.main import bp
+from flask import g
+from app.main.forms import SearchForm
 
 # this is called as view func: handlers for application routes.
 # this decorator create an association b/w URL and the function. \
@@ -76,12 +78,16 @@ def before_request():
 	""" 
 	- func to run: with reach request. 
 	- this func will be executed before any view function of the application. 
-	
-	to update last seen"""
+		to update last seen
+	g: This g variable provided by Flask is a place where the application can 
+	store data that needs to persist through the life of a request
+	(this acts as a private storage for each request)
+	"""
 	if current_user.is_authenticated:
 		# if the user in db then update last_seen column
 		current_user.last_seen = datetime.now(timezone.utc)
 		db.session.commit()
+		g.search_form = SearchForm()
 	g.locale = str(get_locale())
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
@@ -167,3 +173,19 @@ def translate_text():
 	res = {'text': translate(data['text'], 
 						  data['source_language'],
 						  data['dest_language'])}
+
+@bp.route('/search')
+@login_required
+def search():
+	"To Handle GET request for elastic search"
+	if not g.search_form.validate():
+		return redirect(url_for('main.explore'))
+	page = request.args.get('page', 1, type=int)
+	posts, total = Post.search(g.search_form.q.data, page,
+                               current_app.config['POSTS_PER_PAGE'])
+	next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) \
+        if total > page * current_app.config['POSTS_PER_PAGE'] else None
+	prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
+        if page > 1 else None
+	return render_template('search.html', title=_('Search'), posts=posts,
+                           next_url=next_url, prev_url=prev_url)
